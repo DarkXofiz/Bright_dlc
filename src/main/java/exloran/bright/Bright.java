@@ -43,7 +43,7 @@ public class Bright implements ClientModInitializer {
         openMenuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.bright.openmenu",
                 InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_RIGHT_SHIFT,
+                GLFW.GLFW_KEY_KP_0,
                 "category.bright"
         ));
 
