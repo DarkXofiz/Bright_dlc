@@ -52,7 +52,7 @@ public class BrightESPRenderer {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         if (throughWalls) RenderSystem.disableDepthTest();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         RenderSystem.lineWidth(lineWidth);
 
         Matrix4f mat = ms.peek().getPositionMatrix();

@@ -27,8 +27,8 @@ public class HitboxMixin {
 
         EntityDimensions orig = cir.getReturnValue();
         cir.setReturnValue(EntityDimensions.changing(
-                orig.width() * Bright.config.xzExpand,
-                orig.height() * Bright.config.yExpand
+                orig.width * Bright.config.xzExpand,
+                orig.height * Bright.config.yExpand
         ));
     }
 }

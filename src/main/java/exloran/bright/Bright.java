@@ -80,7 +80,7 @@ public class Bright implements ClientModInitializer {
         r = Math.min(r, Math.min(w, h) * 0.499f);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         Matrix4f m4 = ms.peek().getPositionMatrix();
         Tessellator tess = Tessellator.getInstance();
         BufferBuilder buf = tess.getBuffer();
@@ -104,7 +104,7 @@ public class Bright implements ClientModInitializer {
         r = Math.min(r, Math.min(w, h) * 0.499f);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         RenderSystem.lineWidth(1.3f);
         Matrix4f m4 = ms.peek().getPositionMatrix();
         Tessellator tess = Tessellator.getInstance();
