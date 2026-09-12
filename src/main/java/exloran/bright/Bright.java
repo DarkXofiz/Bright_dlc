@@ -8,7 +8,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -66,7 +65,7 @@ public class Bright implements ClientModInitializer {
         if (e == null || !e.isUsingItem()) return false;
         ItemStack u = e.getActiveItem();
         if (u.isEmpty()) return false;
-        return u.getComponents().contains(DataComponentTypes.FOOD)
+        return u.getItem().isFood()
                 || u.getItem() == Items.MILK_BUCKET || u.getItem() == Items.POTION
                 || u.getItem() == Items.SPLASH_POTION || u.getItem() == Items.LINGERING_POTION;
     }
