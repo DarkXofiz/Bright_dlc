@@ -3,10 +3,13 @@ package exloran.bright;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.*;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
@@ -16,11 +19,12 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Matrix4f;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * Bright — Minecraft 1.20.1 Fabric istemci modu.
  * Sadece 3 modul: Hitbox, TriggerBot, ESP.
- * Ayar ekrani SADECE ModMenu uzerinden acilir; tus atamasi yok.
+ * Ayar ekrani hem ModMenu'den hem de Sag Shift tusuyla dogrudan acilir.
  */
 public class Bright implements ClientModInitializer {
 
@@ -28,13 +32,27 @@ public class Bright implements ClientModInitializer {
 
     private long lastAttack = 0L;
 
+    private static KeyBinding openMenuKey;
+
     @Override
     public void onInitializeClient() {
         config = BrightConfig.load();
 
         BrightESPRenderer.register();
 
+        openMenuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.bright.openmenu",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_RIGHT_SHIFT,
+                "category.bright"
+        ));
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            while (openMenuKey.wasPressed()) {
+                if (client.currentScreen == null) {
+                    client.setScreen(new BrightMenu());
+                }
+            }
             if (client.player == null || client.world == null) return;
             handleTrigger(client);
         });
