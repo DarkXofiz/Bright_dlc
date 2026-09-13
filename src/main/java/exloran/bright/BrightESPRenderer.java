@@ -46,16 +46,19 @@ public class BrightESPRenderer {
     private static void drawBox(MatrixStack ms, Box box, Vec3d cam,
                                  float r, float g, float b, float a,
                                  float lineWidth, boolean throughWalls) {
-        double x1 = box.minX - cam.x, y1 = box.minY - cam.y, z1 = box.minZ - cam.z;
-        double x2 = box.maxX - cam.x, y2 = box.maxY - cam.y, z2 = box.maxZ - cam.z;
-
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         if (throughWalls) RenderSystem.disableDepthTest();
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         RenderSystem.lineWidth(lineWidth);
 
+        ms.push();
+        ms.translate(-cam.x, -cam.y, -cam.z);
         Matrix4f mat = ms.peek().getPositionMatrix();
+
+        double x1 = box.minX, y1 = box.minY, z1 = box.minZ;
+        double x2 = box.maxX, y2 = box.maxY, z2 = box.maxZ;
+
         Tessellator tess = Tessellator.getInstance();
         BufferBuilder buf = tess.getBuffer();
         buf.begin(VertexFormat.DrawMode.LINES, VertexFormats.POSITION_COLOR);
@@ -77,6 +80,7 @@ public class BrightESPRenderer {
         line(buf, mat, x1, y1, z2, x1, y2, z2, r, g, b, a);
 
         tess.draw();
+        ms.pop();
         RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
     }

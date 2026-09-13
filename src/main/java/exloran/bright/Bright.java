@@ -144,59 +144,81 @@ public class Bright implements ClientModInitializer {
     }
 
     // ══════════════════════════════════════════════════════════
-    //  BRIGHT MENU — sadece ModMenu'den acilir (tus atamasi yok)
+    //  BRIGHT MENU — suruklenebilir ClickGUI (Numpad0 veya ModMenu)
     // ══════════════════════════════════════════════════════════
     public static class BrightMenu extends Screen {
 
-        private static final int MW = 210, MH = 112;
+        private static final int MW = 210, MH = 112, TITLE_H = 22;
         private static final int SP_W = 220, SP_H = 150;
         private String settingsFor = null;
+
+        private int panelX, panelY;
+        private boolean dragging = false;
+        private double dragOffX, dragOffY;
 
         public BrightMenu() { super(Text.literal("Bright")); }
         @Override public boolean shouldPause() { return false; }
 
         @Override
+        protected void init() {
+            super.init();
+            if (config.guiX == Integer.MIN_VALUE || config.guiY == Integer.MIN_VALUE) {
+                panelX = width / 2 - (MW + SP_W + 6) / 2;
+                panelY = height / 2 - MH / 2;
+            } else {
+                panelX = MathHelper.clamp(config.guiX, 0, Math.max(0, width - MW));
+                panelY = MathHelper.clamp(config.guiY, 0, Math.max(0, height - MH));
+            }
+        }
+
+        @Override
         public void render(DrawContext ctx, int mx, int my, float delta) {
             MatrixStack ms = ctx.getMatrices();
-            int ox = ox(), oy = oy();
+            int ox = panelX, oy = panelY;
 
-            ctx.fill(0, 0, width, height, 0x55000000);
-            fillRound(ms, ox, oy, MW, MH, 8f, 0xF2101018);
-            outlineRound(ms, ox, oy, MW, MH, 8f, 0xFF282840);
-            fillRound(ms, ox, oy, MW, 24, 8f, 0xFF0A0A14);
-            ctx.fill(ox, oy + 12, ox + MW, oy + 24, 0xFF0A0A14);
-            ctx.drawCenteredTextWithShadow(textRenderer, "\u00a75\u25c8 \u00a7dBright \u00a75\u25c8", ox + MW / 2, oy + 7, 0xFFCC88FF);
+            ctx.fill(0, 0, width, height, 0x66000000);
+
+            // Ana panel — golge + gövde
+            fillRound(ms, ox + 2, oy + 2, MW, MH, 8f, 0x55000000);
+            fillRound(ms, ox, oy, MW, MH, 8f, 0xF20C0C14);
+            outlineRound(ms, ox, oy, MW, MH, 8f, 0xFF3A2C66);
+
+            // Baslik cubugu — surukleme alani
+            boolean hovTitle = hovI(mx, my, ox, oy, MW, TITLE_H);
+            fillRound(ms, ox, oy, MW, TITLE_H, 8f, dragging ? 0xFF241040 : 0xFF120A24);
+            ctx.fill(ox, oy + TITLE_H - 8, ox + MW, oy + TITLE_H, dragging ? 0xFF241040 : 0xFF120A24);
+            ctx.drawTextWithShadow(textRenderer, "\u00a7d\u25c8 \u00a7fBright", ox + 8, oy + 7, 0xFFEEDDFF);
+            ctx.drawTextWithShadow(textRenderer, "\u00a78\u2725", ox + MW - 14, oy + 7, hovTitle ? 0xFF9988CC : 0xFF443366);
 
             String[] mods = {"Hitbox", "Trigger", "ESP"};
-            int row = oy + 32;
+            int row = oy + TITLE_H + 6;
             for (String mod : mods) {
                 boolean on = isOn(mod);
                 boolean hov = hovI(mx, my, ox + 6, row, MW - 36, 22);
                 boolean hovGear = hovI(mx, my, ox + MW - 32, row + 4, 26, 14);
 
-                if (on) fillRound(ms, ox + 6, row, MW - 36, 22, 5f, 0xFF1E0040);
-                else if (hov) fillRound(ms, ox + 6, row, MW - 36, 22, 5f, 0xFF161628);
+                if (on) fillRound(ms, ox + 6, row, MW - 36, 22, 5f, 0xFF20123E);
+                else if (hov) fillRound(ms, ox + 6, row, MW - 36, 22, 5f, 0xFF151522);
                 if (on) {
-                    ctx.fill(ox + 6, row + 3, ox + 8, row + 19, 0xFFBB55FF);
-                    ctx.fill(ox + 8, row + 3, ox + 10, row + 19, 0x44BB55FF);
+                    fillRound(ms, ox + 6, row + 2, 3, 18, 1.5f, 0xFFBB55FF);
                 }
-                ctx.drawTextWithShadow(textRenderer, mod, ox + 14, row + 7,
-                        on ? 0xFFEEDDFF : (hov ? 0xFFAAA8CC : 0xFF505060));
-                ctx.drawTextWithShadow(textRenderer, on ? "\u00a7a\u25cf" : "\u00a78\u25cf",
+                ctx.drawTextWithShadow(textRenderer, mod, ox + 15, row + 7,
+                        on ? 0xFFEEDDFF : (hov ? 0xFFAAA8CC : 0xFF55556A));
+                ctx.drawTextWithShadow(textRenderer, on ? "\u00a7d\u25cf" : "\u00a78\u25cb",
                         ox + MW - 44, row + 7, 0xFFFFFFFF);
 
                 boolean gearActive = settingsFor != null && settingsFor.equals(mod);
                 fillRound(ms, ox + MW - 32, row + 4, 26, 14, 4f,
-                        gearActive ? 0xFF3A1A6A : (hovGear ? 0xFF201A38 : 0xFF0E0E1E));
+                        gearActive ? 0xFF3A1A6A : (hovGear ? 0xFF201A38 : 0xFF12101E));
                 outlineRound(ms, ox + MW - 32, row + 4, 26, 14, 4f,
-                        gearActive ? 0xFF8844CC : 0xFF333344);
+                        gearActive ? 0xFFAA66EE : 0xFF332C4A);
                 ctx.drawCenteredTextWithShadow(textRenderer, "\u00a77\u2699", ox + MW - 32 + 13, row + 4, 0xFF9988BB);
 
                 row += 28;
             }
 
-            ctx.drawTextWithShadow(textRenderer, "\u00a78LClick=ac/kapat  \u2699=ayarlar",
-                    ox + 5, oy + MH - 10, 0xFF242434);
+            ctx.drawTextWithShadow(textRenderer, "\u00a78bright client",
+                    ox + 6, oy + MH - 10, 0xFF3A3450);
 
             if (settingsFor != null) renderSettingsPanel(ctx, ms, mx, my);
 
@@ -204,15 +226,16 @@ public class Bright implements ClientModInitializer {
         }
 
         private void renderSettingsPanel(DrawContext ctx, MatrixStack ms, int mx, int my) {
-            int ox = ox() + MW + 6, oy = oy();
-            fillRound(ms, ox, oy, SP_W, SP_H, 8f, 0xF2101018);
+            int ox = panelX + MW + 6, oy = panelY;
+            fillRound(ms, ox + 2, oy + 2, SP_W, SP_H, 8f, 0x55000000);
+            fillRound(ms, ox, oy, SP_W, SP_H, 8f, 0xF20C0C14);
             outlineRound(ms, ox, oy, SP_W, SP_H, 8f, 0xFF8844CC);
-            fillRound(ms, ox, oy, SP_W, 22, 8f, 0xFF0A0A14);
-            ctx.fill(ox, oy + 11, ox + SP_W, oy + 22, 0xFF0A0A14);
+            fillRound(ms, ox, oy, SP_W, TITLE_H, 8f, 0xFF120A24);
+            ctx.fill(ox, oy + TITLE_H - 8, ox + SP_W, oy + TITLE_H, 0xFF120A24);
             ctx.drawCenteredTextWithShadow(textRenderer, "\u00a7d" + settingsFor + " \u00a78Ayarlari",
-                    ox + SP_W / 2, oy + 6, 0xFFCC88FF);
+                    ox + SP_W / 2, oy + 7, 0xFFCC88FF);
 
-            int py = oy + 28;
+            int py = oy + TITLE_H + 6;
             switch (settingsFor) {
                 case "Hitbox" -> {
                     py = slider(ctx, ms, ox + 8, py, SP_W - 16, "XZ Buyutme",
@@ -265,9 +288,17 @@ public class Bright implements ClientModInitializer {
 
         @Override
         public boolean mouseClicked(double mx, double my, int btn) {
-            int ox = ox(), oy = oy();
+            int ox = panelX, oy = panelY;
+
+            if (btn == 0 && hovD(mx, my, ox, oy, MW, TITLE_H)) {
+                dragging = true;
+                dragOffX = mx - ox;
+                dragOffY = my - oy;
+                return true;
+            }
+
             String[] mods = {"Hitbox", "Trigger", "ESP"};
-            int row = oy + 32;
+            int row = oy + TITLE_H + 6;
             for (String mod : mods) {
                 if (btn == 0 && hovD(mx, my, ox + 6, row, MW - 36, 22)) { toggle(mod); return true; }
                 if (hovD(mx, my, ox + MW - 32, row + 4, 26, 14)) {
@@ -282,12 +313,29 @@ public class Bright implements ClientModInitializer {
 
         @Override
         public boolean mouseDragged(double mx, double my, int btn, double dx, double dy) {
-            if (settingsFor != null && btn == 0) { handleSettingsClick(mx, my, ox() + MW + 6, oy()); return true; }
+            if (dragging && btn == 0) {
+                panelX = (int) MathHelper.clamp(mx - dragOffX, 0, Math.max(0, width - MW));
+                panelY = (int) MathHelper.clamp(my - dragOffY, 0, Math.max(0, height - MH));
+                return true;
+            }
+            if (settingsFor != null && btn == 0) { handleSettingsClick(mx, my, panelX + MW + 6, panelY); return true; }
             return super.mouseDragged(mx, my, btn, dx, dy);
         }
 
+        @Override
+        public boolean mouseReleased(double mx, double my, int btn) {
+            if (btn == 0 && dragging) {
+                dragging = false;
+                config.guiX = panelX;
+                config.guiY = panelY;
+                config.save();
+                return true;
+            }
+            return super.mouseReleased(mx, my, btn);
+        }
+
         private void handleSettingsClick(double mx, double my, int ox, int oy) {
-            int py = oy + 28;
+            int py = oy + TITLE_H + 6;
             switch (settingsFor) {
                 case "Hitbox" -> {
                     int sy = py + 11;
@@ -346,12 +394,12 @@ public class Bright implements ClientModInitializer {
 
         @Override
         public void close() {
+            config.guiX = panelX;
+            config.guiY = panelY;
             config.save();
             super.close();
         }
 
-        private int ox() { return width / 2 - MW / 2 - SP_W / 2 - 3; }
-        private int oy() { return height / 2 - MH / 2; }
         private boolean hovI(int mx, int my, int x, int y, int w, int h) { return mx >= x && mx <= x + w && my >= y && my <= y + h; }
         private boolean hovD(double mx, double my, double x, double y, double w, double h) { return mx >= x && mx <= x + w && my >= y && my <= y + h; }
     }

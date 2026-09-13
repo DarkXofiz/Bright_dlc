@@ -28,8 +28,8 @@ public class BrightConfig {
     public boolean espActive     = false;
 
     // ── Hitbox ───────────────────────────────────────────────
-    public float xzExpand = 1.0f;
-    public float yExpand  = 1.0f;
+    public float xzExpand = 1.4f;
+    public float yExpand  = 1.2f;
 
     // ── TriggerBot ───────────────────────────────────────────
     public int     triggerDelay     = 50;
@@ -43,7 +43,11 @@ public class BrightConfig {
     public float   espLineWidth   = 2.0f;
     public boolean espThroughWalls = true;
 
-    public static BrightConfig load() {
+    // ── GUI konumu (surukleme sonrasi hatirlanir) ──────────────
+    public int guiX = Integer.MIN_VALUE;
+    public int guiY = Integer.MIN_VALUE;
+
+
         if (Files.exists(PATH)) {
             try (Reader r = Files.newBufferedReader(PATH, StandardCharsets.UTF_8)) {
                 BrightConfig cfg = GSON.fromJson(r, BrightConfig.class);
