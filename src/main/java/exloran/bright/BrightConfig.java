@@ -47,7 +47,7 @@ public class BrightConfig {
     public int guiX = Integer.MIN_VALUE;
     public int guiY = Integer.MIN_VALUE;
 
-
+    public static BrightConfig load() {
         if (Files.exists(PATH)) {
             try (Reader r = Files.newBufferedReader(PATH, StandardCharsets.UTF_8)) {
                 BrightConfig cfg = GSON.fromJson(r, BrightConfig.class);
